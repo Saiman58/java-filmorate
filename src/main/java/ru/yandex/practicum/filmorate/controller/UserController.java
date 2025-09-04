@@ -81,7 +81,7 @@ public class UserController {
             existingUser.setEmail(updateUser.getEmail());
         }
 
-        if (updateUser.getLogin() != null && updateUser.getLogin().isBlank() && updateUser.getLogin().contains(" ")) {
+        if (updateUser.getLogin() != null && !updateUser.getLogin().isBlank() && !updateUser.getLogin().contains(" ")) {
             existingUser.setLogin(updateUser.getLogin());
         }
 
