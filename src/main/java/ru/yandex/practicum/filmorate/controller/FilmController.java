@@ -86,12 +86,12 @@ public class FilmController {
         LocalDate releaseDate = updatedFilm.getReleaseDate();
 
         if (releaseDate != null) {
-            if (releaseDate.isBefore(startingDate) || releaseDate.isAfter(currentDate)) {
+            if (!(releaseDate.isBefore(startingDate) || releaseDate.isAfter(currentDate))) {
                 existingFilm.setReleaseDate(releaseDate);
             }
         }
 
-        if (updatedFilm.getDuration() != null && updatedFilm.getDuration() <= 0) {
+        if (updatedFilm.getDuration() != null && updatedFilm.getDuration() > 0) {
             existingFilm.setDuration(updatedFilm.getDuration());
         }
         return existingFilm;
