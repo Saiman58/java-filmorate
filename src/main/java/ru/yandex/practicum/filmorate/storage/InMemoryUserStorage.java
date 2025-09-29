@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -107,10 +108,7 @@ public class InMemoryUserStorage implements UserStorage {
             throw new ValidationException("Id должен быть указан");
         }
         // Проверка на существование пользователя
-        if (!users.containsKey(updateUser.getId())) {
-            log.error("Пользователь с id = {} не найден", updateUser.getId());
-            throw new NotFoundException("Пользователь с id = " + updateUser.getId() + " не найден");
-        }
+        findUserById(updateUser.getId());
 
         User existingUser = users.get(updateUser.getId());
         boolean sensorUpdate = false;
@@ -171,6 +169,10 @@ public class InMemoryUserStorage implements UserStorage {
      */
     @Override
     public User findUserById(long userId) {
+        if (!users.containsKey(userId)) {
+            log.error("Пользователь с id = {} не найден", userId);
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+        }
         return users.get(userId);
     }
 }

@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -16,6 +18,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/users")
+@Validated
 public class UserController {
 
     private final UserStorage userStorage;
@@ -38,12 +41,8 @@ public class UserController {
 
     // Получить пользователя по ID
     @GetMapping("/{id}")
-    public ResponseEntity<User> findUserById(@PathVariable Long id) {
-        User user = userStorage.findUserById(id);
-        if (user == null) {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
-        }
-        return ResponseEntity.ok(user);
+    public User findUserById(@Positive @PathVariable Long id) {
+        return userStorage.findUserById(id);
     }
 
     // Добавить пользователя
@@ -60,34 +59,34 @@ public class UserController {
 
     // Добавить друга
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    public void addFriend(@Positive @PathVariable Long id, @Positive @PathVariable Long friendId) {
         userService.addFriend(id, friendId);
     }
 
     // Удалить друга
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    public ResponseEntity<Void> removeFriend(@Positive @PathVariable Long id, @Positive @PathVariable Long friendId) {
         userService.removeFriend(id, friendId);
         return ResponseEntity.ok().build();
     }
 
     // Получить список друзей
     @GetMapping("/{id}/friends")
-    public ResponseEntity<List<User>> getFriends(@PathVariable Long id) {
+    public ResponseEntity<List<User>> getFriends(@Positive @PathVariable Long id) {
         List<User> friends = userService.getFriends(id);
         return ResponseEntity.ok(friends);
     }
 
     // Получить общих друзей с другим пользователем
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    public List<User> getCommonFriends(@Positive @PathVariable Long id, @Positive @PathVariable Long otherId) {
         return userService.getCommonFriends(id, otherId);
     }
 
 
     // Получить наиболее популярные фильмы
     @GetMapping("/films/popular")
-    public ResponseEntity<List<Film>> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+    public ResponseEntity<List<Film>> getPopularFilms(@Positive @RequestParam(defaultValue = "10") int count) {
         List<Film> films = filmService.getMostPopularFilms(count);
         return ResponseEntity.ok(films);
     }

@@ -105,10 +105,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
 
         //Проверка, существует ли фильм с указанным ID
-        if (!films.containsKey(updatedFilm.getId())) {
-            log.error("Фильм с id = {} не найден", updatedFilm.getId());
-            throw new NotFoundException("Фильм с id = " + updatedFilm.getId() + " не найден");
-        }
+        findFilmById(updatedFilm.getId());
 
         Film existingFilm = films.get(updatedFilm.getId());
 
@@ -161,6 +158,10 @@ public class InMemoryFilmStorage implements FilmStorage {
      */
     @Override
     public Film findFilmById(long filmId) {
+        if (!films.containsKey(filmId)) {
+            log.error("Фильм с id = {} не найден", filmId);
+            throw new NotFoundException("Фильм с id = " + filmId + " не найден");
+        }
         return films.get(filmId);
     }
 }
