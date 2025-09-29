@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -40,7 +39,7 @@ public class FilmController {
 
     //вывод фильма по id
     @GetMapping("/{id}")
-    public Film getFilmById (@Positive @PathVariable int id){
+    public Film getFilmById(@Positive @PathVariable int id) {
         return filmStorage.findFilmById(id);
     }
 
