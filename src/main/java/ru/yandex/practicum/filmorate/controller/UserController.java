@@ -1,115 +1,92 @@
 package ru.yandex.practicum.filmorate.controller;
 
-
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/users")
+@Validated
 public class UserController {
+
+    private final UserStorage userStorage;
+    private final UserService userService;
+    private final FilmService filmService;
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
-    private final Map<Long, User> users = new HashMap<>();
+
+    public UserController(UserStorage userStorage, UserService userService, FilmService filmService) {
+        this.userStorage = userStorage;
+        this.userService = userService;
+        this.filmService = filmService;
+    }
 
     //вывод всех пользователей
     @GetMapping
-    public Collection<User> findAll() {
-        return users.values();
+    public Collection<User> findUserAll() {
+        log.info("Запрос на вывод всех пользователей");
+        return userStorage.findUserAll();
     }
 
-    //Добавить пользователя
+    // Получить пользователя по ID
+    @GetMapping("/{id}")
+    public User findUserById(@Positive @PathVariable Long id) {
+        return userStorage.findUserById(id);
+    }
+
+    // Добавить пользователя
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
-        try {
-            // Проверка на пустой логин и наличие пробелов
-            if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-                log.error("Логин не может быть пустым и содержать пробелы");
-                throw new ValidationException(("Логин не может быть пустым и содержать пробелы"));
-            }
-
-            // Установить имя в логин, если имя не указано
-            if (user.getName() == null || user.getName().isBlank()) {
-                user.setName(user.getLogin());
-            }
-
-            // Проверка на дату рождения
-            LocalDate currentDate = LocalDate.now(); //тек. дата
-            if (user.getBirthday() == null || user.getBirthday().isAfter(currentDate)) {
-                log.error("Дата рождения не может быть в будущем или не заполнена");
-                throw new ValidationException("Дата рождения не может быть в будущем или не заполнена");
-            }
-
-            user.setId(getNextId());
-            users.put(user.getId(), user);
-            log.info("Пользователь успешно создан: {}", user);
-            return user;
-        } catch (ValidationException e) {
-            log.error("Создание пользователя завершилось ошибкой: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            log.error("Произошла непредвиденная ошибка", e);
-            throw new RuntimeException("Произошла непредвиденная ошибка", e);
-        }
+        return userStorage.createUser(user);
     }
 
-    // вспомогательный метод для генерации идентификатора нового поста
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
-    }
-
-    //обновить информацию и пользователе
+    // Обновить информацию о пользователе
     @PutMapping
     public User update(@RequestBody User updateUser) {
-        // Проверка на null для ID пользователя
-        if (updateUser.getId() == null) {
-            log.error("Id должен быть указан");
-            throw new ValidationException("Id должен быть указан");
-        }
-        // Проверка на существование пользователя
-        if (!users.containsKey(updateUser.getId())) {
-            log.error("Пользователь с id = {} не найден", updateUser.getId());
-            throw new ValidationException("Пользователь с id = " + updateUser.getId() + " не найден");
-        }
+        return userStorage.update(updateUser);
+    }
 
-        User existingUser = users.get(updateUser.getId());
+    // Добавить друга
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@Positive @PathVariable Long id, @Positive @PathVariable Long friendId) {
+        userService.addFriend(id, friendId);
+    }
 
-        // Обновление email, если он указан и корректен
-        if (updateUser.getEmail() != null && updateUser.getEmail().contains("@")) {
-            existingUser.setEmail(updateUser.getEmail());
-            log.info("Email обновлен");
-        }
+    // Удалить друга
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<Void> removeFriend(@Positive @PathVariable Long id, @Positive @PathVariable Long friendId) {
+        userService.removeFriend(id, friendId);
+        return ResponseEntity.ok().build();
+    }
 
-        // Обновление логина, если он указан и корректен
-        if (updateUser.getLogin() != null && !updateUser.getLogin().isBlank() && !updateUser.getLogin().contains(" ")) {
-            existingUser.setLogin(updateUser.getLogin());
-            log.info("Логин обновлен");
-        }
+    // Получить список друзей
+    @GetMapping("/{id}/friends")
+    public ResponseEntity<List<User>> getFriends(@Positive @PathVariable Long id) {
+        List<User> friends = userService.getFriends(id);
+        return ResponseEntity.ok(friends);
+    }
 
-        // Обновление имени, если оно указано
-        if (updateUser.getName() != null) {
-            existingUser.setName(updateUser.getName());
-            log.info("Имя обновлено");
-        }
+    // Получить общих друзей с другим пользователем
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@Positive @PathVariable Long id, @Positive @PathVariable Long otherId) {
+        return userService.getCommonFriends(id, otherId);
+    }
 
-        LocalDate currentDate = LocalDate.now(); //тек. дата
-        // Обновление даты рождения, если она указана и корректна
-        if (updateUser.getBirthday() != null && !updateUser.getBirthday().isAfter(currentDate)) {
-            existingUser.setBirthday(updateUser.getBirthday());
-            log.info("Дата рождения обновлена");
-        }
-        return existingUser;
+
+    // Получить наиболее популярные фильмы
+    @GetMapping("/films/popular")
+    public ResponseEntity<List<Film>> getPopularFilms(@Positive @RequestParam(defaultValue = "10") int count) {
+        List<Film> films = filmService.getMostPopularFilms(count);
+        return ResponseEntity.ok(films);
     }
 }
