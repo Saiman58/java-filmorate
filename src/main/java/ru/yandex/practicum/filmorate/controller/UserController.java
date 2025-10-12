@@ -1,92 +1,68 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.List;
 
+@Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
-@Validated
 public class UserController {
-
-    private final UserStorage userStorage;
     private final UserService userService;
-    private final FilmService filmService;
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-    public UserController(UserStorage userStorage, UserService userService, FilmService filmService) {
-        this.userStorage = userStorage;
-        this.userService = userService;
-        this.filmService = filmService;
-    }
-
-    //вывод всех пользователей
-    @GetMapping
-    public Collection<User> findUserAll() {
-        log.info("Запрос на вывод всех пользователей");
-        return userStorage.findUserAll();
-    }
-
-    // Получить пользователя по ID
-    @GetMapping("/{id}")
-    public User findUserById(@Positive @PathVariable Long id) {
-        return userStorage.findUserById(id);
-    }
-
-    // Добавить пользователя
     @PostMapping
-    public User createUser(@Valid @RequestBody User user) {
-        return userStorage.createUser(user);
+    public User createUser(@RequestBody User user) {
+        log.info("Запрос на создание пользователя: {}", user);
+        User createdUser = userService.createUser(user);
+        log.info("Пользователь создан успешно с ID: {}", createdUser.getId());
+        return createdUser;
     }
 
-    // Обновить информацию о пользователе
     @PutMapping
-    public User update(@RequestBody User updateUser) {
-        return userStorage.update(updateUser);
+    public User updateUser(@RequestBody User updatedUser) {
+        log.info("Запрос на обновление пользователя: {}", updatedUser);
+        User updated = userService.updateUser(updatedUser);
+        log.info("Пользователь с ID {} обновлен", updatedUser.getId());
+        return updated;
     }
 
-    // Добавить друга
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@Positive @PathVariable Long id, @Positive @PathVariable Long friendId) {
+    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        log.info("Добавление в друзья: пользователь {} добавляет пользователя {}", id, friendId);
         userService.addFriend(id, friendId);
     }
 
-    // Удалить друга
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> removeFriend(@Positive @PathVariable Long id, @Positive @PathVariable Long friendId) {
+    public void removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        log.info("Удаление из друзей: пользователь {} удалил пользователя {}", id, friendId);
         userService.removeFriend(id, friendId);
-        return ResponseEntity.ok().build();
     }
 
-    // Получить список друзей
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Long id) {
+        log.info("Запрос на получение пользователя с ID: {}", id);
+        return userService.getUserById(id);
+    }
+
+    @GetMapping
+    public List<User> getUsers() {
+        return userService.getUsers();
+    }
+
     @GetMapping("/{id}/friends")
-    public ResponseEntity<List<User>> getFriends(@Positive @PathVariable Long id) {
-        List<User> friends = userService.getFriends(id);
-        return ResponseEntity.ok(friends);
+    public List<User> getFriends(@PathVariable Long id) {
+        log.info("Получение друзей пользователя с ID: {}", id);
+        return userService.getFriends(id);
     }
 
-    // Получить общих друзей с другим пользователем
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@Positive @PathVariable Long id, @Positive @PathVariable Long otherId) {
+    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+        log.info("Получение общих друзей пользователей {} и {}", id, otherId);
         return userService.getCommonFriends(id, otherId);
-    }
-
-
-    // Получить наиболее популярные фильмы
-    @GetMapping("/films/popular")
-    public ResponseEntity<List<Film>> getPopularFilms(@Positive @RequestParam(defaultValue = "10") int count) {
-        List<Film> films = filmService.getMostPopularFilms(count);
-        return ResponseEntity.ok(films);
     }
 }
