@@ -14,5 +14,5 @@ public class Genre {
     int id;
 
     @NotBlank
-    String name;
+    private String name;
 }

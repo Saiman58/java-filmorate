@@ -14,5 +14,5 @@ public class RatingMpa {
     int id;
 
     @NotBlank
-    String name;
+    private String name;
 }

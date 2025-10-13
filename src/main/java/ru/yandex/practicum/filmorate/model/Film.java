@@ -38,13 +38,13 @@ public class Film {
     private Long duration; //продолжительность фильма
 
     @Builder.Default
-    Set<Long> likes = new HashSet<>();
+    private Set<Long> likes = new HashSet<>();
 
     @NotNull(message = "У фильма должен быть указан рейтинг MPA")
-    RatingMpa mpa;
+    private RatingMpa mpa;
 
     @Builder.Default
-    List<Genre> genres = new ArrayList<>();
+    private List<Genre> genres = new ArrayList<>();
 
 }
 
