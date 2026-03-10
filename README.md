@@ -61,7 +61,7 @@
 - `GET /users/{id}/friends` — друзья пользователя
 - `GET /users/{id}/friends/common/{otherId}` — общие друзья
 
-### Справочники
+###  Справочники
 - `GET /genres` — все жанры
 - `GET /genres/{id}` — жанр по ID
 - `GET /mpa` — все рейтинги
