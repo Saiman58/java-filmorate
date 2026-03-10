@@ -59,7 +59,7 @@
 - `PUT /users/{id}/friends/{friendId}` — добавить в друзья
 - `DELETE /users/{id}/friends/{friendId}` — удалить из друзей
 - `GET /users/{id}/friends` — друзья пользователя
-- `GET /users/{id}/friends/common/{otherId}` — общие друзья
+- `GET /users/{id}/friends/common/{otherId}` —общие друзья
 
 
 ### Справочники
