@@ -61,7 +61,8 @@
 - `GET /users/{id}/friends` — друзья пользователя
 - `GET /users/{id}/friends/common/{otherId}` — общие друзья
 
-###  Справочники
+
+### Справочники
 - `GET /genres` — все жанры
 - `GET /genres/{id}` — жанр по ID
 - `GET /mpa` — все рейтинги
@@ -105,3 +106,6 @@ String sql = "SELECT f.*, m.name as mpa_name " +
 📱 **Telegram:** [@saiman58](https://t.me/saiman58)
 
 ---
+
+
+
