@@ -108,5 +108,3 @@ String sql = "SELECT f.*, m.name as mpa_name " +
 
 ---
 
-
-
